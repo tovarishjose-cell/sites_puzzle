@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Пазл</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#000000;
+    font-family:Arial,sans-serif;
+	justify-content: center;
+    align-items: center;
+}
+
+#game{
+    position:relative;
+    width:1200px;
+    height:800px;
+    background:url("puzzle.png") no-repeat center center;
+    background-size:100% 100%;
+}
+
+.dropzone{
+    position:absolute;
+    width:200px;
+    height:150px;
+    opacity:0;
+    pointer-events:none;
+}
+
+/* элементы */
+.piece{
+    position:absolute;
+    width:320px;
+    height:150px;
+    background-repeat:no-repeat;
+    background-position:center;
+    background-size:auto auto;
+
+    cursor:grab;
+    user-select:none;
+    touch-action:none;
+}
+
+.piece.dragging{
+    cursor:grabbing;
+    z-index:9999;
+}
+</style>
+</head>
+<body>
+
+<div id="game">
+
+    <div class="dropzone" id="target1"></div>
+    <div class="dropzone" id="target2"></div>
+    <div class="dropzone" id="target3"></div>
+    <div class="dropzone" id="target4"></div>
+    <div class="dropzone" id="target5"></div>
+    <div class="dropzone" id="target6"></div>
+
+    <div class="piece" id="obj1"></div>
+    <div class="piece" id="obj2"></div>
+    <div class="piece" id="obj3"></div>
+    <div class="piece" id="obj4"></div>
+    <div class="piece" id="obj5"></div>
+    <div class="piece" id="obj6"></div>
+
+</div>
+
+<script>
+
+const pieces = [
+    "obj1",
+    "obj2",
+    "obj3",
+    "obj4",
+    "obj5",
+    "obj6"
+];
+
+const targets = {
+    obj1:{x:200,y:200},
+    obj2:{x:400,y:120},
+    obj3:{x:700,y:150},
+    obj4:{x:200,y:500},
+    obj5:{x:600,y:600},
+    obj6:{x:900,y:450}
+};
+
+const game = document.getElementById("game");
+
+pieces.forEach(id => {
+
+    const el = document.getElementById(id);
+
+    el.style.backgroundImage = `url("${id}.png")`;
+
+    el.style.left =
+        Math.floor(Math.random()*900) + "px";
+
+    el.style.top =
+        Math.floor(Math.random()*800) + "px";
+});
+
+let active = null;
+let shiftX = 0;
+let shiftY = 0;
+
+document.querySelectorAll(".piece").forEach(piece => {
+
+    piece.addEventListener("pointerdown", e => {
+
+        active = piece;
+
+        piece.classList.add("dragging");
+
+        const rect = piece.getBoundingClientRect();
+
+        shiftX = e.clientX - rect.left;
+        shiftY = e.clientY - rect.top;
+
+        piece.setPointerCapture(e.pointerId);
+    });
+
+    piece.addEventListener("pointermove", e => {
+
+        if(!active) return;
+
+        const parentRect =
+            game.getBoundingClientRect();
+
+        active.style.left =
+            (e.clientX - parentRect.left - shiftX)
+            + "px";
+
+        active.style.top =
+            (e.clientY - parentRect.top - shiftY)
+            + "px";
+    });
+
+    piece.addEventListener("pointerup", () => {
+
+        if(!active) return;
+
+        const id = active.id;
+
+        const target = targets[id];
+
+        const currentX =
+            parseFloat(active.style.left);
+
+        const currentY =
+            parseFloat(active.style.top);
+
+        const distance =
+            Math.hypot(
+                currentX - target.x,
+                currentY - target.y
+            );
+
+
+        if(distance < 1){
+
+            active.style.left =
+                target.x + "px";
+
+            active.style.top =
+                target.y + "px";
+        }
+
+        active.classList.remove("dragging");
+        active = null;
+    });
+
+});
+
+</script>
+
+</body>
+</html>
